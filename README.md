@@ -11,6 +11,7 @@ git clone https://github.com/GabriPalmyro/MiniCurso-semIF-Flutter-Todo
 flutter run -d chrome
 ~~~
 3. Insira objetos na lista e confirme
+![Print projeto](https://github.com/GabriPalmyro/MiniCurso-semIF-Flutter-Todo/tree/main/images/HOME.jpg?raw=true)
 
 #### Link para os Slides apresentados
 [Slides](https://docs.google.com/presentation/d/1TWNulDpFQlAKvt5Q3LKW6i6Os_wdqOMfQcMVbKHWMr8/edit?usp=sharing)

@@ -18,6 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Todo newTodo = Todo(name: name, isDone: false);
     setState(() {
       todoList.add(newTodo);
+      ordenarLista();
       _todoController.clear();
     });
   }
@@ -25,12 +26,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void completeTask(int index) {
     setState(() {
       todoList[index].isDone = !todoList[index].isDone;
-      todoList.sort((a, b) {
-        if (a.isDone) {
-          return 1;
-        }
-        return -1;
-      });
+      ordenarLista();
+    });
+  }
+
+  void ordenarLista() {
+    todoList.sort((a, b) {
+      if (a.isDone) {
+        return 1;
+      }
+      return -1;
     });
   }
 
