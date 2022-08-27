@@ -1,16 +1,16 @@
-# todo_list
+# Mini Curso Flutter - SemIF 2022
+### Aplicativo de tarefas desenvolvido para o mini curso da semIF de 2022
 
-A new Flutter project.
+#### Como rodar o projeto 
+1. Faça o Git Clone do Projeto
+~~~git
+git clone https://github.com/GabriPalmyro/MiniCurso-semIF-Flutter-Todo
+~~~
+2. Utilize a versão 3.0.5 do Flutter para rodar
+~~~powershell
+flutter run -d chrome
+~~~
+3. Insira objetos na lista e confirme
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#### Link para os Slides apresentados
+[Slides](https://docs.google.com/presentation/d/1TWNulDpFQlAKvt5Q3LKW6i6Os_wdqOMfQcMVbKHWMr8/edit?usp=sharing)
