@@ -1,185 +1,132 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:developer';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _todoController = TextEditingController();
+class _HomePageState extends State<HomePage> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Repository> _repositories = [];
 
-  // LISTA DE TAREFAS
-  List<Todo> todoList = [];
+  Future<void> _fetchRepositories(String searchTerm) async {
+    String apiUrl = 'https://api.github.com/users/$searchTerm/repos';
 
-  // FUNÇÃO QUE ADICIONA MAIS UM TAREFA NA LISTA
-  void createTodo(String name) {
-    Todo newTodo = Todo(name: name, isDone: false);
-    setState(() {
-      todoList.add(newTodo);
-      ordenarLista();
-      _todoController.clear();
-    });
-  }
+    final response = await http.get(Uri.parse(apiUrl));
+    if (response.statusCode == 200) {
+      // Decodifica a resposta JSON para uma lista dinâmica
+      List<dynamic> jsonList = json.decode(response.body);
+      List<Repository> repositories = [];
 
-  void completeTask(int index) {
-    setState(() {
-      todoList[index].isDone = !todoList[index].isDone;
-      ordenarLista();
-    });
-  }
-
-  void ordenarLista() {
-    todoList.sort((a, b) {
-      if (a.isDone) {
-        return 1;
+      // Itera sobre a lista de itens JSON e cria objetos Repository a partir deles
+      for (var item in jsonList) {
+        repositories.add(Repository.fromJson(item));
       }
-      return -1;
-    });
+
+      // Atualiza o estado da lista de repositórios com os dados obtidos
+      setState(() {
+        _repositories = repositories;
+      });
+    } else {
+      // Se ocorrer um erro na solicitação, você pode exibir uma mensagem de erro ou realizar outra ação adequada.
+      log('Erro na solicitação: ${response.statusCode}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Todo List'),
+        title: const Text('Github Repos'),
         centerTitle: true,
         backgroundColor: const Color(0xFF2830F0),
       ),
       body: Column(
         children: [
-          Container(
-            height: 60,
-            margin:
-                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 24.0, vertical: 5.0),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: 8,
-                      spreadRadius: 1,
-                      color: Colors.black.withOpacity(0.3),
-                      offset: const Offset(-2, 3))
-                ]),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _todoController,
-                    decoration: const InputDecoration(),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: CircleAvatar(
-                    backgroundColor: const Color(0xFF2830F0),
-                    child: Center(
-                      child: IconButton(
-                        icon: const Icon(Icons.add),
-                        onPressed: () {
-                          createTodo(_todoController.text);
-                        },
-                      ),
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      hintText: 'Digite um nome de usuário',
                     ),
                   ),
-                )
+                ),
+                const SizedBox(width: 16.0),
+                IconButton(
+                  onPressed: () {
+                    String searchTerm = _searchController.text;
+                    _fetchRepositories(searchTerm);
+                  },
+                  icon: const Icon(
+                    Icons.search,
+                    color: Color(0xFF2830F0),
+                  ),
+                ),
               ],
             ),
           ),
-          const Divider(
-            thickness: 2,
-          ),
           Expanded(
             child: ListView.builder(
-              itemCount: todoList.length,
-              itemBuilder: ((context, index) {
-                return TodoItem(
-                  todo: todoList[index],
-                  onTodoChange: () {
-                    completeTask(index);
-                  },
+              itemCount: _repositories.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ListTile(
+                    title: Text(
+                      _repositories[index].name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w500, fontSize: 18),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_repositories[index].description ?? ''),
+                        Text(
+                          'Linguagem: ${_repositories[index].language ?? 'N/A'}',
+                          style: const TextStyle(fontWeight: FontWeight.w300),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
-              }),
+              },
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
-class Todo {
+class Repository {
+  final int id;
   final String name;
-  bool isDone;
+  final String? description;
+  final String? language;
 
-  Todo({required this.name, required this.isDone});
-}
+  Repository({
+    required this.id,
+    required this.name,
+    this.description,
+    this.language,
+  });
 
-class TodoItem extends StatelessWidget {
-  final Todo todo;
-  final VoidCallback onTodoChange;
-
-  const TodoItem({Key? key, required this.onTodoChange, required this.todo})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 280,
-      margin: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
-      padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 12.0),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-                blurRadius: 8,
-                spreadRadius: 1,
-                color: Colors.black.withOpacity(0.3),
-                offset: const Offset(-2, 3))
-          ]),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Text(
-              todo.name,
-              style: TextStyle(
-                decoration: todo.isDone
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
-              ),
-            ),
-          ),
-          if (todo.isDone) ...[
-            CircleAvatar(
-              backgroundColor: const Color(0xFF3EF45B),
-              child: Center(
-                  child: IconButton(
-                onPressed: onTodoChange,
-                icon: const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                ),
-              )),
-            ),
-          ] else ...[
-            InkWell(
-              onTap: onTodoChange,
-              child: const CircleAvatar(
-                backgroundColor: Color.fromARGB(255, 153, 153, 153),
-              ),
-            ),
-          ]
-        ],
-      ),
+  factory Repository.fromJson(Map<String, dynamic> json) {
+    return Repository(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'] ?? '',
+      language: json['language'],
     );
   }
 }
